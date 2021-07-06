@@ -1,6 +1,6 @@
 package com.xyz.pay.service.impl;
 
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayConstants;
 import com.alipay.api.DefaultAlipayClient;
@@ -15,9 +15,6 @@ import com.xyz.pay.config.AliPayProperties;
 import com.xyz.pay.service.AliPayService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 支付宝支付
@@ -62,12 +59,16 @@ public class AliPayServiceImpl implements AliPayService {
         // 扫码支付成功后，调用后端异步通知支付结果的接口
         alipayTradePagePayRequest.setNotifyUrl(this.alipayProperties.getNotifyUrl());
         // 业务内容封装
-        Map<String, String> bizContent = new HashMap<>();
-        bizContent.put("out_trade_no", outTradeNo);
-        bizContent.put("total_amount", String.valueOf(amount));
-        bizContent.put("subject", "");
-        bizContent.put("body", "");
-        alipayTradePagePayRequest.setBizContent(JSON.toJSON(bizContent).toString());
+        AlipayTradeWapPayModel wapPayModel = new AlipayTradeWapPayModel();
+        // 订单号
+        wapPayModel.setOutTradeNo(outTradeNo);
+        // 金额
+        wapPayModel.setTotalAmount(String.valueOf(amount));
+        // 订单标题
+        wapPayModel.setSubject("");
+        // 订单描述
+        wapPayModel.setBody("");
+        alipayTradePagePayRequest.setBizModel(wapPayModel);
         try {
             // 调用支付宝客户端接口支付,获取结果
             AlipayTradePagePayResponse alipayTradePagePayResponse = builder.build().pageExecute(alipayTradePagePayRequest);
@@ -112,10 +113,11 @@ public class AliPayServiceImpl implements AliPayService {
         AlipayTradeWapPayModel wapPayModel = new AlipayTradeWapPayModel();
         // 订单号
         wapPayModel.setOutTradeNo(outTradeNo);
-        // 总金额
+        // 金额
         wapPayModel.setTotalAmount(String.valueOf(amount));
-        // 商品
+        // 订单标题
         wapPayModel.setSubject("");
+        // 订单描述
         wapPayModel.setBody("");
         alipayTradeWapPayRequest.setBizModel(wapPayModel);
         try {
@@ -154,7 +156,10 @@ public class AliPayServiceImpl implements AliPayService {
          * 查单业务信息封装，APP端用AlipayTradeQueryRequest对象
          */
         AlipayTradeQueryRequest alipayTradeQueryRequest = new AlipayTradeQueryRequest();
-        alipayTradeQueryRequest.setBizContent("{\"out_trade_no\":\"" + outTradeNo + "\"," + "\"trade_no\":\"" + tradeNo + "\"}");
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("out_trade_no", outTradeNo);
+        jsonObject.put("trade_no", tradeNo);
+        alipayTradeQueryRequest.setBizContent(jsonObject.toJSONString());
         try {
             // 调用支付宝客户端查询接口，,获取结果
             AlipayTradeQueryResponse alipayTradeQueryResponse = builder.build().execute(alipayTradeQueryRequest);
