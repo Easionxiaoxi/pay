@@ -4,9 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * @Description : 支付宝支付属性类，用于读取支付宝支付配置
- * @Author : xyz
- * @Date: 2020-10-29 17:57
+ * 支付宝支付属性类，用于读取支付宝支付配置
  */
 @Data
 @ConfigurationProperties(prefix = "alipay")
@@ -31,13 +29,13 @@ public class AliPayProperties {
      * 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
      */
     public String returnUrl;
-   /**
+    /**
      * 页面跳转同步通知H5页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
      */
     public String returnH5Url;
 
     /**
-     *  签名方式
+     * 签名方式
      */
     public String signType;
     /**

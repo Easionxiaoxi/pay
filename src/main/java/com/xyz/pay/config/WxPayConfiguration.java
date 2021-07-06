@@ -12,9 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @Description : 微信支付配置
- * @Author : xyz
- * @Date: 2020-10-29 10:38
+ * 微信支付配置
  */
 @Configuration
 @ConditionalOnClass(WxPayService.class)
@@ -27,9 +25,8 @@ public class WxPayConfiguration {
     private WxPayProperties properties;
 
     /**
+     * 封装微信支付配置信息
      * @return WeChatPayService
-     * @description 封装微信支付配置信息
-     * @author xyz
      */
     @Bean
     @ConditionalOnMissingBean

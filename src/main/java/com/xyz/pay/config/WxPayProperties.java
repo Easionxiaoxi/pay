@@ -4,9 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * @Description : 微信支付属性类,，用于读取微信支付配置
- * @Author : xyz
- * @Date: 2020-10-29 10:28
+ * 微信支付属性类,，用于读取微信支付配置
  */
 @Data
 @ConfigurationProperties(prefix = "wx.pay")

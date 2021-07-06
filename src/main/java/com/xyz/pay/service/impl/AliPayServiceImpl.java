@@ -20,9 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @Description : 支付宝支付
- * @Author : xyz
- * @Date: 2020-10-30 09:05
+ * 支付宝支付
  */
 @Service
 @AllArgsConstructor
@@ -34,11 +32,11 @@ public class AliPayServiceImpl implements AliPayService {
     private AliPayProperties alipayProperties;
 
     /**
+     * 支付宝web网页端支付
+     *
      * @param outTradeNo 订单号
      * @param amount     金额
      * @return void
-     * @description 支付宝web网页端支付
-     * @author xyz
      */
     @Override
     public void unifiedOrderByWeb(String outTradeNo, Long amount) {
@@ -81,11 +79,11 @@ public class AliPayServiceImpl implements AliPayService {
     }
 
     /**
+     * 支付宝App端H5支付
+     *
      * @param outTradeNo 订单号
      * @param amount     金额
      * @return void
-     * @description 支付宝App端H5支付
-     * @author xyz
      */
     @Override
     public void unifiedOrderByApp(String outTradeNo, Long amount) {
@@ -131,11 +129,11 @@ public class AliPayServiceImpl implements AliPayService {
     }
 
     /**
+     * 支付宝查单，补单
+     *
      * @param tradeNo    支付宝交易号
      * @param outTradeNo 订单号
      * @return void
-     * @description 支付宝查单，补单
-     * @author xyz
      */
     @Override
     public void queryAliPay(String tradeNo, String outTradeNo) {
@@ -161,7 +159,7 @@ public class AliPayServiceImpl implements AliPayService {
             // 调用支付宝客户端查询接口，,获取结果
             AlipayTradeQueryResponse alipayTradeQueryResponse = builder.build().execute(alipayTradeQueryRequest);
             // 判断交易成功
-            if ("10000".equals(alipayTradeQueryResponse.getCode()) && "TRADE_SUCCESS".equals(alipayTradeQueryResponse.getTradeStatus())){
+            if ("10000".equals(alipayTradeQueryResponse.getCode()) && "TRADE_SUCCESS".equals(alipayTradeQueryResponse.getTradeStatus())) {
                 // 打印交易成功结果
                 System.out.println(alipayTradeQueryResponse.toString());
             }
