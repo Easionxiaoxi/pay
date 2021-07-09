@@ -70,7 +70,7 @@ public class WeChatPayServiceImpl implements WeChatPayService {
                 .totalFee(Integer.valueOf(String.valueOf(totalFee)))
                 .spbillCreateIp(InetAddress.getLocalHost().getHostAddress())
                 .tradeType(WxPayConstants.TradeType.MWEB)
-                .sceneInfo("{\"h5_info\": {\"type\":\"Wap\",\"wap_url\": \"https://*\",\"wap_name\": \"xx平台\"}");
+                .sceneInfo("{\"h5_info\": {\"type\":\"Wap\",\"wap_url\": \"https://*\",\"wap_name\": \"xx平台\"}}");
         try {
             // 调用微信统一下单接口，获取手机端微信支付跳转的链接，给手机端用户支付
             WxPayUnifiedOrderResult wxPayUnifiedOrderResult = this.wxService.unifiedOrder(wxPayUnifiedOrderRequestBuilder.build());
