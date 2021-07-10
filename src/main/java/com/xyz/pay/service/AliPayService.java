@@ -1,23 +1,22 @@
 package com.xyz.pay.service;
 
+import com.xyz.pay.domain.AliPayModel;
+
 public interface AliPayService {
     /**
      * 支付宝web网页端支付
-     *
-     * @param outTradeNo 订单号
-     * @param amount     金额
+     * @param aliPayModel 支付业务参数
      * @return void
      */
-    void unifiedOrderByWeb(String outTradeNo, Long amount);
+    void unifiedOrderByWeb(AliPayModel aliPayModel);
 
     /**
-     * 支付宝App端H5支付
+     * 支付宝H5支付
      *
-     * @param outTradeNo 订单号
-     * @param amount     金额
+     * @param aliPayModel 支付业务参数
      * @return void
      */
-    void unifiedOrderByApp(String outTradeNo, Long amount);
+    void unifiedOrderByApp(AliPayModel aliPayModel);
 
     /**
      * 支付宝查单，补单

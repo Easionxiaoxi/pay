@@ -11,7 +11,7 @@ import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeWapPayResponse;
-import com.xyz.pay.config.AliPayProperties;
+import com.xyz.pay.domain.AliPayModel;
 import com.xyz.pay.service.AliPayService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,12 +31,11 @@ public class AliPayServiceImpl implements AliPayService {
     /**
      * 支付宝web网页端支付
      *
-     * @param outTradeNo 订单号
-     * @param amount     金额
+     * @param aliPayModel 支付业务参数
      * @return void
      */
     @Override
-    public void unifiedOrderByWeb(String outTradeNo, Long amount) {
+    public void unifiedOrderByWeb(AliPayModel aliPayModel) {
         // 支付宝基本配置信息封装
         DefaultAlipayClient.Builder builder = DefaultAlipayClient.builder(this.alipayProperties.getGatewayUrl(), this.alipayProperties.getAppId(), this.alipayProperties.getMerchantPrivateKey());
         builder
@@ -49,7 +48,7 @@ public class AliPayServiceImpl implements AliPayService {
                 // 编码
                 .charset(AlipayConstants.CHARSET_UTF8)
                 // 商品编码
-                .prodCode("FAST_INSTANT_TRADE_PAY");
+                .prodCode(aliPayModel.getProdCode());
         /**
          * 支付业务信息封装，web网页端用AlipayTradePagePayRequest对象
          */
@@ -61,13 +60,13 @@ public class AliPayServiceImpl implements AliPayService {
         // 业务内容封装
         AlipayTradeWapPayModel wapPayModel = new AlipayTradeWapPayModel();
         // 订单号
-        wapPayModel.setOutTradeNo(outTradeNo);
+        wapPayModel.setOutTradeNo(aliPayModel.getOutTradeNo());
         // 金额
-        wapPayModel.setTotalAmount(String.valueOf(amount));
+        wapPayModel.setTotalAmount(String.valueOf(aliPayModel.getAmount()));
         // 订单标题
-        wapPayModel.setSubject("");
+        wapPayModel.setSubject(aliPayModel.getSubject());
         // 订单描述
-        wapPayModel.setBody("");
+        wapPayModel.setBody(aliPayModel.getBody());
         alipayTradePagePayRequest.setBizModel(wapPayModel);
         try {
             // 调用支付宝客户端接口支付,获取结果
@@ -80,14 +79,13 @@ public class AliPayServiceImpl implements AliPayService {
     }
 
     /**
-     * 支付宝App端H5支付
+     * 支付宝H5支付
      *
-     * @param outTradeNo 订单号
-     * @param amount     金额
+     * @param aliPayModel 支付业务参数
      * @return void
      */
     @Override
-    public void unifiedOrderByApp(String outTradeNo, Long amount) {
+    public void unifiedOrderByApp(AliPayModel aliPayModel) {
         // 支付宝基本配置信息封装
         DefaultAlipayClient.Builder builder = DefaultAlipayClient.builder(this.alipayProperties.getGatewayUrl(), this.alipayProperties.getAppId(), this.alipayProperties.getMerchantPrivateKey());
         builder
@@ -100,7 +98,7 @@ public class AliPayServiceImpl implements AliPayService {
                 // 编码
                 .charset(AlipayConstants.CHARSET_UTF8)
                 // 商品编码
-                .prodCode("FAST_INSTANT_TRADE_PAY");
+                .prodCode(aliPayModel.getProdCode());
         /**
          * 支付业务信息封装，APP端用AlipayTradeWapPayRequest对象
          */
@@ -112,18 +110,17 @@ public class AliPayServiceImpl implements AliPayService {
         // 业务内容封装
         AlipayTradeWapPayModel wapPayModel = new AlipayTradeWapPayModel();
         // 订单号
-        wapPayModel.setOutTradeNo(outTradeNo);
-        // 金额
-        wapPayModel.setTotalAmount(String.valueOf(amount));
+        wapPayModel.setOutTradeNo(aliPayModel.getOutTradeNo());
+        // 金额单位为元
+        wapPayModel.setTotalAmount(String.valueOf(aliPayModel.getAmount()));
         // 订单标题
-        wapPayModel.setSubject("");
+        wapPayModel.setSubject(aliPayModel.getSubject());
         // 订单描述
-        wapPayModel.setBody("");
+        wapPayModel.setBody(aliPayModel.getBody());
         alipayTradeWapPayRequest.setBizModel(wapPayModel);
         try {
             // 调用支付宝客户端接口支付,获取结果
             AlipayTradeWapPayResponse alipayTradeWapPayResponse = builder.build().pageExecute(alipayTradeWapPayRequest);
-            // 打印支付结果
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
