@@ -1,6 +1,7 @@
 package com.xyz.pay.service;
 
 import com.xyz.pay.domain.AliPayModel;
+import com.xyz.pay.domain.AlipayQueryModel;
 import com.xyz.pay.domain.Result;
 
 public interface AliPayService {
@@ -22,9 +23,8 @@ public interface AliPayService {
     /**
      * 支付宝查单，补单
      *
-     * @param tradeNo    支付宝交易号
-     * @param outTradeNo 订单号
+     * @param alipayQueryModel 查询参数
      * @return Result
      */
-    Result queryAliPay(String tradeNo, String outTradeNo);
+    Result queryAliPay(AlipayQueryModel alipayQueryModel);
 }

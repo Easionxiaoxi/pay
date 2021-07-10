@@ -13,6 +13,7 @@ import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeWapPayResponse;
 import com.xyz.pay.config.AliPayProperties;
 import com.xyz.pay.domain.AliPayModel;
+import com.xyz.pay.domain.AlipayQueryModel;
 import com.xyz.pay.domain.Result;
 import com.xyz.pay.service.AliPayService;
 import lombok.AllArgsConstructor;
@@ -135,12 +136,11 @@ public class AliPayServiceImpl implements AliPayService {
     /**
      * 支付宝查单，补单
      *
-     * @param tradeNo    支付宝交易号
-     * @param outTradeNo 订单号
+     * @param alipayQueryModel 查询参数
      * @return Result
      */
     @Override
-    public Result queryAliPay(String tradeNo, String outTradeNo) {
+    public Result queryAliPay(AlipayQueryModel alipayQueryModel) {
         // 支付宝基本配置信息封装
         DefaultAlipayClient.Builder builder = DefaultAlipayClient.builder(this.alipayProperties.getGatewayUrl(), this.alipayProperties.getAppId(), this.alipayProperties.getMerchantPrivateKey());
         builder
@@ -153,13 +153,13 @@ public class AliPayServiceImpl implements AliPayService {
                 // 编码
                 .charset(AlipayConstants.CHARSET_UTF8)
                 // 商品编码
-                .prodCode("FAST_INSTANT_TRADE_PAY");
+                .prodCode(alipayQueryModel.getProdCode());
 
         // 查单业务信息封装，APP端用AlipayTradeQueryRequest对象
         AlipayTradeQueryRequest alipayTradeQueryRequest = new AlipayTradeQueryRequest();
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("out_trade_no", outTradeNo);
-        jsonObject.put("trade_no", tradeNo);
+        jsonObject.put("out_trade_no", alipayQueryModel.getOutTradeNo());
+        jsonObject.put("trade_no", alipayQueryModel.getTradeNo());
         alipayTradeQueryRequest.setBizContent(jsonObject.toJSONString());
         try {
             // 调用支付宝客户端查询接口，,获取结果
