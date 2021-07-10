@@ -2,11 +2,13 @@ package com.xyz.pay.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * 支付宝支付属性类，用于读取支付宝支付配置
  */
 @Data
+@Configuration
 @ConfigurationProperties(prefix = "alipay")
 public class AliPayProperties {
     /**

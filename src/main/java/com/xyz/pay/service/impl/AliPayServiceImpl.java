@@ -11,7 +11,9 @@ import com.alipay.api.request.AlipayTradeWapPayRequest;
 import com.alipay.api.response.AlipayTradePagePayResponse;
 import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeWapPayResponse;
+import com.xyz.pay.config.AliPayProperties;
 import com.xyz.pay.domain.AliPayModel;
+import com.xyz.pay.domain.Result;
 import com.xyz.pay.service.AliPayService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,10 +34,10 @@ public class AliPayServiceImpl implements AliPayService {
      * 支付宝web网页端支付
      *
      * @param aliPayModel 支付业务参数
-     * @return void
+     * @return Result
      */
     @Override
-    public void unifiedOrderByWeb(AliPayModel aliPayModel) {
+    public Result unifiedOrderByWeb(AliPayModel aliPayModel) {
         // 支付宝基本配置信息封装
         DefaultAlipayClient.Builder builder = DefaultAlipayClient.builder(this.alipayProperties.getGatewayUrl(), this.alipayProperties.getAppId(), this.alipayProperties.getMerchantPrivateKey());
         builder
@@ -49,9 +51,8 @@ public class AliPayServiceImpl implements AliPayService {
                 .charset(AlipayConstants.CHARSET_UTF8)
                 // 商品编码
                 .prodCode(aliPayModel.getProdCode());
-        /**
-         * 支付业务信息封装，web网页端用AlipayTradePagePayRequest对象
-         */
+
+        // 支付业务信息封装，web网页端用AlipayTradePagePayRequest对象
         AlipayTradePagePayRequest alipayTradePagePayRequest = new AlipayTradePagePayRequest();
         // 扫码支付成功后，在前端页面同步通知支付结果
         alipayTradePagePayRequest.setReturnUrl(this.alipayProperties.getReturnUrl());
@@ -71,21 +72,23 @@ public class AliPayServiceImpl implements AliPayService {
         try {
             // 调用支付宝客户端接口支付,获取结果
             AlipayTradePagePayResponse alipayTradePagePayResponse = builder.build().pageExecute(alipayTradePagePayRequest);
-            // 打印结果
-            System.out.println(alipayTradePagePayRequest);
+            if (alipayTradePagePayResponse.isSuccess()) {
+                return Result.success(alipayTradePagePayResponse);
+            }
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
+        return Result.fail();
     }
 
     /**
      * 支付宝H5支付
      *
      * @param aliPayModel 支付业务参数
-     * @return void
+     * @return Result
      */
     @Override
-    public void unifiedOrderByApp(AliPayModel aliPayModel) {
+    public Result unifiedOrderByApp(AliPayModel aliPayModel) {
         // 支付宝基本配置信息封装
         DefaultAlipayClient.Builder builder = DefaultAlipayClient.builder(this.alipayProperties.getGatewayUrl(), this.alipayProperties.getAppId(), this.alipayProperties.getMerchantPrivateKey());
         builder
@@ -99,9 +102,8 @@ public class AliPayServiceImpl implements AliPayService {
                 .charset(AlipayConstants.CHARSET_UTF8)
                 // 商品编码
                 .prodCode(aliPayModel.getProdCode());
-        /**
-         * 支付业务信息封装，APP端用AlipayTradeWapPayRequest对象
-         */
+
+        //支付业务信息封装，APP端用AlipayTradeWapPayRequest对象
         AlipayTradeWapPayRequest alipayTradeWapPayRequest = new AlipayTradeWapPayRequest();
         // 扫码支付成功后，在H5前端页面同步通知支付结果
         alipayTradeWapPayRequest.setReturnUrl(this.alipayProperties.getReturnH5Url());
@@ -121,10 +123,13 @@ public class AliPayServiceImpl implements AliPayService {
         try {
             // 调用支付宝客户端接口支付,获取结果
             AlipayTradeWapPayResponse alipayTradeWapPayResponse = builder.build().pageExecute(alipayTradeWapPayRequest);
+            if (alipayTradeWapPayResponse.isSuccess()) {
+                return Result.success(alipayTradeWapPayResponse);
+            }
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
-
+        return Result.fail();
     }
 
     /**
@@ -132,10 +137,10 @@ public class AliPayServiceImpl implements AliPayService {
      *
      * @param tradeNo    支付宝交易号
      * @param outTradeNo 订单号
-     * @return void
+     * @return Result
      */
     @Override
-    public void queryAliPay(String tradeNo, String outTradeNo) {
+    public Result queryAliPay(String tradeNo, String outTradeNo) {
         // 支付宝基本配置信息封装
         DefaultAlipayClient.Builder builder = DefaultAlipayClient.builder(this.alipayProperties.getGatewayUrl(), this.alipayProperties.getAppId(), this.alipayProperties.getMerchantPrivateKey());
         builder
@@ -149,9 +154,8 @@ public class AliPayServiceImpl implements AliPayService {
                 .charset(AlipayConstants.CHARSET_UTF8)
                 // 商品编码
                 .prodCode("FAST_INSTANT_TRADE_PAY");
-        /**
-         * 查单业务信息封装，APP端用AlipayTradeQueryRequest对象
-         */
+
+        // 查单业务信息封装，APP端用AlipayTradeQueryRequest对象
         AlipayTradeQueryRequest alipayTradeQueryRequest = new AlipayTradeQueryRequest();
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("out_trade_no", outTradeNo);
@@ -162,11 +166,11 @@ public class AliPayServiceImpl implements AliPayService {
             AlipayTradeQueryResponse alipayTradeQueryResponse = builder.build().execute(alipayTradeQueryRequest);
             // 判断交易成功
             if ("10000".equals(alipayTradeQueryResponse.getCode()) && "TRADE_SUCCESS".equals(alipayTradeQueryResponse.getTradeStatus())) {
-                // 打印交易成功结果
-                System.out.println(alipayTradeQueryResponse.toString());
+                return Result.success(alipayTradeQueryResponse);
             }
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
+        return Result.fail();
     }
 }
