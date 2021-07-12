@@ -1,11 +1,17 @@
 package com.xyz.pay.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.binarywang.wxpay.bean.request.WxPayUnifiedOrderRequest;
 import com.github.binarywang.wxpay.bean.result.WxPayOrderQueryResult;
 import com.github.binarywang.wxpay.bean.result.WxPayUnifiedOrderResult;
 import com.github.binarywang.wxpay.constant.WxPayConstants;
 import com.github.binarywang.wxpay.exception.WxPayException;
 import com.github.binarywang.wxpay.service.WxPayService;
+import com.xyz.pay.domain.Result;
+import com.xyz.pay.domain.WxPayH5Model;
+import com.xyz.pay.domain.WxPayNativeModel;
+import com.xyz.pay.domain.WxPayQueryModel;
 import com.xyz.pay.service.WeChatPayService;
 import org.springframework.stereotype.Service;
 
@@ -27,63 +33,62 @@ public class WeChatPayServiceImpl implements WeChatPayService {
     /**
      * web网站下单
      *
-     * @param outTradeNo 订单号
-     * @param totalFee   金额（单位为分）
+     * @param wxPayNativeModel 支付业务参数
      * @return String 返回二维码地址
      */
     @Override
-    public String unifiedOrderByNative(String outTradeNo, Long totalFee) throws UnknownHostException {
+    public Result unifiedOrderByNative(WxPayNativeModel wxPayNativeModel) throws UnknownHostException {
         // 封装下单请求参数
         WxPayUnifiedOrderRequest.WxPayUnifiedOrderRequestBuilder wxPayUnifiedOrderRequestBuilder = WxPayUnifiedOrderRequest.newBuilder();
         wxPayUnifiedOrderRequestBuilder
-                .deviceInfo("WEB")
-                .body("苹果12")
-                .productId("ZCPS_001")
-                .outTradeNo(outTradeNo)
-                .totalFee(Integer.valueOf(String.valueOf(totalFee)))
+                .deviceInfo(wxPayNativeModel.getDeviceInfo())
+                .body(wxPayNativeModel.getBody())
+                .productId(wxPayNativeModel.getProductId())
+                .outTradeNo(wxPayNativeModel.getOutTradeNo())
+                .totalFee(wxPayNativeModel.getTotalFee())
                 .spbillCreateIp(InetAddress.getLocalHost().getHostAddress())
                 .tradeType(WxPayConstants.TradeType.NATIVE);
         try {
             // 调用微信统一下单接口，获取二维码url地址，给前端用户扫码支付
             WxPayUnifiedOrderResult wxPayUnifiedOrderResult = this.wxService.unifiedOrder(wxPayUnifiedOrderRequestBuilder.build());
-            return wxPayUnifiedOrderResult.getCodeURL();
+            return Result.success(wxPayUnifiedOrderResult.getCodeURL());
         } catch (WxPayException e) {
             e.printStackTrace();
         }
-        return "";
+        return Result.fail();
     }
 
     /**
      * 第三方手机浏览器H5下单
      *
-     * @param outTradeNo 订单号
-     * @param totalFee   金额（分）
+     * @param wxPayH5Model 支付业务参数
      * @return String 手机端微信支付跳转的链接
      */
     @Override
-    public String unifiedOrderByH5(String outTradeNo, Long totalFee) throws UnknownHostException {
+    public Result unifiedOrderByH5(WxPayH5Model wxPayH5Model) throws UnknownHostException {
         // 封装下单请求参数
+        JSONObject h5Info = new JSONObject();
+        h5Info.put("h5_info", JSON.toJSONString(wxPayH5Model.getH5Info()));
         WxPayUnifiedOrderRequest.WxPayUnifiedOrderRequestBuilder wxPayUnifiedOrderRequestBuilder = WxPayUnifiedOrderRequest.newBuilder();
         wxPayUnifiedOrderRequestBuilder
-                .body("苹果12")
-                .outTradeNo(outTradeNo)
-                .totalFee(Integer.valueOf(String.valueOf(totalFee)))
+                .body(wxPayH5Model.getBody())
+                .outTradeNo(wxPayH5Model.getOutTradeNo())
+                .totalFee(wxPayH5Model.getTotalFee())
                 .spbillCreateIp(InetAddress.getLocalHost().getHostAddress())
                 .tradeType(WxPayConstants.TradeType.MWEB)
-                .sceneInfo("{\"h5_info\": {\"type\":\"Wap\",\"wap_url\": \"https://*\",\"wap_name\": \"xx平台\"}}");
+                .sceneInfo(h5Info.toJSONString());
         try {
             // 调用微信统一下单接口，获取手机端微信支付跳转的链接，给手机端用户支付
             WxPayUnifiedOrderResult wxPayUnifiedOrderResult = this.wxService.unifiedOrder(wxPayUnifiedOrderRequestBuilder.build());
-            return wxPayUnifiedOrderResult.getMwebUrl();
+            return Result.success(wxPayUnifiedOrderResult.getMwebUrl());
         } catch (WxPayException e) {
             e.printStackTrace();
         }
-        return "";
+        return Result.fail();
     }
 
     /**
      * 查询订单---用于补单
-     *
      * 详见https://pay.weixin.qq.com/wiki/doc/api/jsapi.php?chapter=9_2
      * 该接口提供所有微信支付订单的查询，商户可以通过查询订单接口主动查询订单状态，完成下一步的业务逻辑。
      * 需要调用查询接口的情况：
@@ -91,44 +96,25 @@ public class WeChatPayServiceImpl implements WeChatPayService {
      * ◆ 调用支付接口后，返回系统错误或未知交易状态情况；
      * ◆ 调用被扫支付API，返回USERPAYING的状态；
      *
-     * @param transactionId 微信订单号
-     * @param outTradeNo    商户系统内部的订单号，当没提供transactionId时需要传这个。
+     * @param wxPayQueryModel 查询参数
      * @return 订单信息
      */
     @Override
-    public void queryOrder(String transactionId, String outTradeNo) {
+    public Result queryOrder(WxPayQueryModel wxPayQueryModel) {
         try {
             // 调用微信查单接口，获取订单结果
-            WxPayOrderQueryResult wxPayOrderQueryResult = this.wxService.queryOrder(transactionId, outTradeNo);
+            WxPayOrderQueryResult wxPayOrderQueryResult = this.wxService.queryOrder(wxPayQueryModel.getTransactionId(), wxPayQueryModel.getOutTradeNo());
             // 根据返回状态码returnCode判断查询成功
             if (WxPayConstants.ResultCode.SUCCESS.equals(wxPayOrderQueryResult.getReturnCode())) {
-                // 获取订单号
-                System.out.println(wxPayOrderQueryResult.getOutTradeNo());
-                // 根据业务结果resultCode判断支付成功
-                if (WxPayConstants.ResultCode.SUCCESS.equals(wxPayOrderQueryResult.getResultCode())) {
-                    // 根据交易状态tradeState判断交易成功
-                    if (WxPayConstants.WxpayTradeStatus.SUCCESS.equals(wxPayOrderQueryResult.getTradeState())) {
-                        // 获取微信方交易号
-                        System.out.println(wxPayOrderQueryResult.getTransactionId());
-                        // 获取支付完成时间
-                        System.out.println(wxPayOrderQueryResult.getTimeEnd());
-                    }
-                    // 根据交易状态tradeState判断交易失败
-                    if (!WxPayConstants.WxpayTradeStatus.SUCCESS.equals(wxPayOrderQueryResult.getTradeState())) {
-                        System.out.println("微信付款失败，失败原因：" + wxPayOrderQueryResult.getTradeStateDesc());
-                    }
-                }
-                // 根据业务结果resultCode判断支付失败
-                if (!WxPayConstants.ResultCode.SUCCESS.equals(wxPayOrderQueryResult.getResultCode())) {
-                    System.out.println("微信回调付款失败，失败原因：" + wxPayOrderQueryResult.getErrCode() + ":" + wxPayOrderQueryResult.getErrCodeDes());
-                }
+                return Result.success(wxPayOrderQueryResult);
             }
             // 根据返回状态码returnCode判断查询失败
             if (!WxPayConstants.ResultCode.SUCCESS.equals(wxPayOrderQueryResult.getReturnCode())) {
-                System.out.println("微信查询订单失败，失败原因：" + wxPayOrderQueryResult.getErrCode() + ":" + wxPayOrderQueryResult.getErrCodeDes());
+                return Result.fail(wxPayOrderQueryResult.getErrCodeDes());
             }
         } catch (WxPayException e) {
             e.printStackTrace();
         }
+        return Result.fail();
     }
 }

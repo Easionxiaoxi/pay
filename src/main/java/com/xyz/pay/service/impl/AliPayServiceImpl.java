@@ -13,7 +13,7 @@ import com.alipay.api.response.AlipayTradeQueryResponse;
 import com.alipay.api.response.AlipayTradeWapPayResponse;
 import com.xyz.pay.config.AliPayProperties;
 import com.xyz.pay.domain.AliPayModel;
-import com.xyz.pay.domain.AlipayQueryModel;
+import com.xyz.pay.domain.AliPayQueryModel;
 import com.xyz.pay.domain.Result;
 import com.xyz.pay.service.AliPayService;
 import lombok.AllArgsConstructor;
@@ -140,7 +140,7 @@ public class AliPayServiceImpl implements AliPayService {
      * @return Result
      */
     @Override
-    public Result queryAliPay(AlipayQueryModel alipayQueryModel) {
+    public Result queryAliPay(AliPayQueryModel alipayQueryModel) {
         // 支付宝基本配置信息封装
         DefaultAlipayClient.Builder builder = DefaultAlipayClient.builder(this.alipayProperties.getGatewayUrl(), this.alipayProperties.getAppId(), this.alipayProperties.getMerchantPrivateKey());
         builder

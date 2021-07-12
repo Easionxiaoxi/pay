@@ -1,7 +1,7 @@
 package com.xyz.pay.service;
 
 import com.xyz.pay.domain.AliPayModel;
-import com.xyz.pay.domain.AlipayQueryModel;
+import com.xyz.pay.domain.AliPayQueryModel;
 import com.xyz.pay.domain.Result;
 
 public interface AliPayService {
@@ -26,5 +26,5 @@ public interface AliPayService {
      * @param alipayQueryModel 查询参数
      * @return Result
      */
-    Result queryAliPay(AlipayQueryModel alipayQueryModel);
+    Result queryAliPay(AliPayQueryModel alipayQueryModel);
 }
